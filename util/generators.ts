@@ -1,5 +1,6 @@
-import { customAlphabet } from "nanoid/async";
+import { customAlphabet } from "nanoid"
 
-const alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+const alphabet =
+  "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 const size = 11
-export const generateId = customAlphabet(alphabet, size);
+export const generateId = customAlphabet(alphabet, size)

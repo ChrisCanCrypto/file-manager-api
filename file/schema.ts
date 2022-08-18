@@ -34,7 +34,7 @@ export const fileModule = createModule({
       }
 
       extend type Mutation {
-        createFile(input: createFileInput!): CreateFileResult!
+        createFile(input: CreateFileInput!): CreateFileResult!
       }
     `,
   ],

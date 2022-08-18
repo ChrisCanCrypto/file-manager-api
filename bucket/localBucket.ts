@@ -31,7 +31,7 @@ function getPath(key: string): string {
   return join(`${rootDir}`, key)
 }
 
-const fsWrite = fs.write
+const fsWrite = fs.writeFile
 async function writeFile(key: string, data: Parameters<typeof fsWrite>[1]) {
   const path = getPath(key)
   await fs.mkdir(dirname(path), {

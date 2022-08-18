@@ -60,7 +60,7 @@ app.get("/file", function (req, res) {
   )
     .then((file) => {
       res.setHeader("Content-Type", file.ContentType)
-      res.status(200).send(file.body)
+      res.status(200).send(file.Body)
     })
     .catch((error) => {
       res.status(400).send(error)
