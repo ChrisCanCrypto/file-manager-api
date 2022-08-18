@@ -1,13 +1,13 @@
 // eslint-disable-next-line
 require("dotenv").config()
-import express from "express"
+import express, { Request } from "express"
 import { Directory, File, FileVersion } from "@prisma/client"
 import { graphqlHTTP } from "express-graphql"
 import { createApplication, createModule, gql } from "graphql-modules"
 import { fileModule } from "./file"
 import { directoryModule } from "./directory"
 import { fileVersionModule } from "./fileVersion"
-import { downloadLocalFile } from "./bucket"
+import { downloadLocalFile, uploadLocalFile } from "./bucket"
 
 const mainModule = createModule({
   id: "main-module",
@@ -65,6 +65,23 @@ app.get("/file", function (req, res) {
     .catch((error) => {
       res.status(400).send(error)
     })
+})
+
+app.use(/\/((?!graphql).)*/, express.raw({ limit: "100000kb", type: "*/*" }))
+
+app.put("/file", function (req: Request<unknown, unknown, Buffer>, res) {
+  const { headers } = req
+  const data = {
+    ContentType: headers["content-type"] ?? "application/octet-stream",
+    Body: req.body,
+  }
+
+  void uploadLocalFile(
+    `${req.protocol}://${req.get("host") ?? ""}${req.originalUrl}`,
+    data
+  )
+    .then(() => res.status(200).send(true))
+    .catch((error) => res.status(400).send(error))
 })
 
 app.use(

@@ -64,9 +64,23 @@ async function deleteObject(key: string) {
   await fs.unlink(key + ".info")
 }
 
-export async function downloadLocalFile(signedUrl: string): Promise<FakeAwsFile> {
+export async function downloadLocalFile(
+  signedUrl: string
+): Promise<FakeAwsFile> {
   const key = validateSignedUrl("get", signedUrl)
   return await getObject(key)
+}
+
+export async function uploadLocalFile(
+  signedUrl: string,
+  file: FakeAwsFile
+): Promise<void> {
+  const key = validateSignedUrl("put", signedUrl)
+  await saveFile(key, {
+    ContentLength: file.Body.byteLength,
+    LastModified: new Date(),
+    ...file,
+  })
 }
 
 async function getObject(key: string): Promise<FakeAwsFile> {
