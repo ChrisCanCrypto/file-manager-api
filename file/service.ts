@@ -23,10 +23,12 @@ export async function createFileRecord(
     name,
     directoryId,
     versions: {
-      name,
-      key,
-      mimeType,
-      size,
+      create: {
+        name,
+        key,
+        mimeType,
+        size,
+      }
     },
   }
 

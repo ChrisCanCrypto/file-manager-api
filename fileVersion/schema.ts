@@ -13,6 +13,7 @@ export const fileVersionModule = createModule({
         fileId: ID!
         mimeType: String!
         size: Int!
+        key: String!
         createdAt: String!
         updatedAt: String!
         versions: [FileVersion]!

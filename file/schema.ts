@@ -26,7 +26,7 @@ export const fileModule = createModule({
 
       type CreateFileResult {
         file: File!
-        string: String!
+        url: String!
       }
 
       extend type Query {
