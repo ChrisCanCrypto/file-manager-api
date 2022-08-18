@@ -1,6 +1,6 @@
 import { promises as fs } from "fs"
 import { DateTime } from "luxon"
-import { dirname, join } from "path"
+import { dirname, join, parse } from "path"
 import { FakeAwsFile, FileBucket, SIGNED_URL_EXPIRES } from "./bucket"
 
 const appRoot = require.main?.path[0].split("node_modules")[0].slice(0, -1)
@@ -62,4 +62,66 @@ export async function saveFile(
 async function deleteObject(key: string) {
   await fs.unlink(key)
   await fs.unlink(key + ".info")
+}
+
+export async function downloadLocalFile(signedUrl: string): Promise<FakeAwsFile> {
+  const key = validateSignedUrl("get", signedUrl)
+  return await getObject(key)
+}
+
+async function getObject(key: string): Promise<FakeAwsFile> {
+  const rest = await headObject(key)
+  const Body = await fs.readFile(getPath(key))
+  return { ...rest, Body }
+}
+
+async function headObject(key: string): Promise<FakeAwsFile> {
+  const path = getPath(key)
+
+  try {
+    await fs.stat(path)
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error
+    }
+  }
+
+  const raw = await fs.readFile(path + ".info")
+  const parsedInfo = JSON.parse(raw.toString()) as FakeAwsFile
+  const info = {
+    ...parsedInfo,
+    ...(parsedInfo.LastModified
+      ? { LastModified: new Date(parsedInfo.LastModified) }
+      : {}),
+  }
+
+  return info
+}
+
+function validateSignedUrl(operation: "get" | "put", url: string) {
+  const searchParams = new URL(url).searchParams
+  const rawSigned = searchParams.get("signed") ?? url
+
+  try {
+    const signed = JSON.parse(rawSigned) as {
+      operation: string
+      key: string
+      expires: number
+    }
+
+    if (signed.operation !== operation) {
+      throw new Error("Incorrect Operation")
+    }
+    if (DateTime.local() > DateTime.fromMillis(signed.expires)) {
+      throw new Error("URL Expired")
+    }
+
+    return signed.key
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error
+    } else {
+      throw new Error("Could not validate URL")
+    }
+  }
 }

@@ -7,6 +7,7 @@ import { createApplication, createModule, gql } from "graphql-modules"
 import { fileModule } from "./file"
 import { directoryModule } from "./directory"
 import { fileVersionModule } from "./fileVersion"
+import { downloadLocalFile } from "./bucket"
 
 const mainModule = createModule({
   id: "main-module",
@@ -53,6 +54,18 @@ const api = createApplication({
 
 const app = express()
 
+app.get("/file", function (req, res) {
+  void downloadLocalFile(
+    `${req.protocol}://${req.get("host") ?? ""}${req.originalUrl}`
+  )
+    .then((file) => {
+      res.setHeader("Content-Type", file.ContentType)
+      res.status(200).send(file.body)
+    })
+    .catch((error) => {
+      res.status(400).send(error)
+    })
+})
 
 app.use(
   "/graphql",
