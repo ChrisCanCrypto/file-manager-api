@@ -73,3 +73,22 @@ export async function getFileVersions(
     where: { fileId },
   })
 }
+
+export async function renameFileVersion(
+  client: PrismaClient,
+  id: FileVersion["id"],
+  name: FileVersion["name"]
+): Promise<FileVersion> {
+  return await client.fileVersion.update({
+    where: { id },
+    data: { name },
+  })
+}
+
+export async function deleteFileVersion(
+  client: PrismaClient,
+  id: FileVersion["id"]
+): Promise<boolean> {
+  await client.fileVersion.delete({ where: { id } })
+  return true
+}

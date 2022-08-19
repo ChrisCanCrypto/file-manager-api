@@ -1,6 +1,6 @@
 import { FileVersion } from "@prisma/client"
-import { Pagination } from "../app"
 import { createModule, gql } from "graphql-modules"
+import { Pagination } from "../app"
 import { prismaClient } from "../prisma"
 import * as fileVersionService from "./services"
 
@@ -42,8 +42,11 @@ export const fileVersionModule = createModule({
 
       extend type Query {
         getAllFileVersions: [FileVersion]!
-        getFileVersion(id: ID!): FileVersion!
-        getFileVersions(fileId: ID!, pagination: PaginationInput): [FileVersion]!
+        getFileVersion(id: ID!): FileVersion
+        getFileVersions(
+          fileId: ID!
+          pagination: PaginationInput
+        ): [FileVersion]!
         requestFileDownload(key: String!): String!
       }
 
@@ -51,6 +54,8 @@ export const fileVersionModule = createModule({
         createFileVersion(
           input: CreateFileVersionInput!
         ): CreateFileVersionResult!
+        renameFileVersion(id: ID!, name: String!): FileVersion!
+        deleteFileVersion(id: ID!): Boolean!
       }
     `,
   ],
@@ -66,7 +71,11 @@ export const fileVersionModule = createModule({
         _: unknown,
         { fileId, pagination }: { fileId: string; pagination?: Pagination }
       ) => {
-        return await fileVersionService.getFileVersions(prismaClient(), fileId, pagination)
+        return await fileVersionService.getFileVersions(
+          prismaClient(),
+          fileId,
+          pagination
+        )
       },
       requestFileDownload: async (_: unknown, { key }: { key: string }) => {
         return await fileVersionService.requestFileDownload(key)
@@ -81,6 +90,22 @@ export const fileVersionModule = createModule({
           prismaClient(),
           input
         )
+      },
+      renameFileVersion: async (
+        _: unknown,
+        { id, name }: { id: FileVersion["id"]; name: FileVersion["name"] }
+      ) => {
+        return await fileVersionService.renameFileVersion(
+          prismaClient(),
+          id,
+          name
+        )
+      },
+      deleteFileVersion: async (
+        _: unknown,
+        { id }: { id: FileVersion["id"] }
+      ) => {
+        return await fileVersionService.deleteFileVersion(prismaClient(), id)
       },
     },
   },
